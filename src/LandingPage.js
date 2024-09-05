@@ -29,8 +29,8 @@ const LandingPage = () => {
         options: {
           width: window.innerWidth,
           height: window.innerHeight,
-          wireframes: true, // 도형들이 와이어프레임으로 나타나도록 설정
-          background: '#000000', // 검은 배경
+          wireframes: false, // 채워진 도형을 위해 wireframes를 false로 설정
+          background: '#000000', // 검정색 배경
         },
       });
 
@@ -40,7 +40,17 @@ const LandingPage = () => {
       var runner = Runner.create();
       Runner.run(runner, engine);
 
-      // add bodies with white borders
+      // 랜덤한 색상을 설정하는 함수
+      const getRandomColor = () => {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      };
+
+      // 도형들을 추가
       Composite.add(world, [
         Bodies.rectangle(window.innerWidth / 2, 0, window.innerWidth, 50, { isStatic: true }),
         Bodies.rectangle(window.innerWidth / 2, window.innerHeight, window.innerWidth, 50, { isStatic: true }),
@@ -86,9 +96,7 @@ const LandingPage = () => {
         friction: 0.0001,
         restitution: 0.8,
         render: {
-          fillStyle: 'transparent', // 내부는 투명
-          strokeStyle: 'white', // 테두리 색상 흰색
-          lineWidth: 2, // 테두리 두께
+          fillStyle: getRandomColor(), // 랜덤한 색상으로 도형 채우기
         },
       };
 
