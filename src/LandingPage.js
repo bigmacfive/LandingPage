@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Matter from 'matter-js';
+import './index.css'; // CSS 파일 임포트
 
 const LandingPage = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 500);
@@ -91,12 +92,6 @@ const LandingPage = () => {
   };
 
   const styles = {
-    container: {
-      fontFamily: "'IBM Plex Mono', monospace",
-      letterSpacing: '-0.05em',
-      backgroundColor: 'white',
-      padding: '0.5rem',
-    },
     header: {
       display: 'flex',
       justifyContent: 'space-between',
@@ -258,115 +253,34 @@ const LandingPage = () => {
       alignItems: 'center',
       justifyContent: 'center',
       fontSize: '1.5rem',
-    },
-    reviewName: {
-      fontWeight: 'bold',
-    },
-    reviewPosition: {
-      fontSize: '0.9rem',
-      color: '#666',
+      color: '#333',
     },
     reviewText: {
-      fontSize: '0.9rem',
-      lineHeight: '1.4',
-    },
-    footer: {
-      backgroundColor: 'black',
-      color: 'white',
-      padding: '2rem',
-      marginTop: '0.5rem',
-      borderRadius: '8px',
-    },
-    footerContent: {
-      display: 'flex',
-      flexDirection: isMobile ? 'column' : 'row',
-      justifyContent: 'space-between',
-      alignItems: isMobile ? 'flex-start' : 'center',
-    },
-    footerLogo: {
-      display: 'flex',
-      alignItems: 'center',
-      marginBottom: isMobile ? '1rem' : 0,
-    },
-    footerLinks: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: '1rem',
-      marginBottom: isMobile ? '1rem' : 0,
-    },
-    footerLink: {
-      color: 'white',
-      textDecoration: 'none',
-    },
-    footerEmail: {
-      marginBottom: isMobile ? '1rem' : 0,
-    },
-    footerBottom: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginTop: '1rem',
-      borderTop: '1px solid #333',
-      paddingTop: '1rem',
+      fontSize: '1rem',
+      lineHeight: '1.5',
     },
   };
 
-  const reviews = [
-    {
-      name: "Johannes Schickling",
-      position: "Founder, Prisma",
-      avatar: "JS",
-      text: "After many recommendations, I finally switched from VSC to Cursor and ... wow! It's absolutely incredible. If you like Copilot (or if you don't), you'll be blown away by Cursor. There is no going back. 🤯"
-    },
-    {
-      name: "Ben Bernard",
-      position: "Sr. Staff Engineer, Instacart",
-      avatar: "BB",
-      text: "Cursor is at least a 2x improvement over Copilot. It's amazing having an AI pair programmer, and is an incredible accelerator for me and my team."
-    },
-    {
-      name: "Andrew McCalip",
-      position: "Engineering, Varda Space",
-      avatar: "AM",
-      text: "Cursor is awesome! Someone finally put AI into a code editor in a seamless way. It's so elegant and easy. I'm an hour in and already hooked."
-    },
-    {
-      name: "Sam Whitmore",
-      position: "Engineering, New Computer",
-      avatar: "SW",
-      text: "started using Cursor yesterday & i'm blown away. it's how Copilot should feel. i'm completely off VSCode now."
-    }
-  ];
-
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
+    <div className="container">
+      <div style={styles.header}>
         <div style={styles.title}>THE SCENTS</div>
         <nav style={styles.nav}>
-          <span style={styles.navItem}>aaaaa</span>
-          <span style={styles.navItem}>bbbbb</span>
-          <span style={styles.navItem}>ccccc</span>
-          <span style={styles.navItem}>ddddd</span>
-          <span style={styles.navItem}>eeeee</span>
+          <div style={styles.navItem}>Home</div>
+          <div style={styles.navItem}>Features</div>
+          <div style={styles.navItem}>Reviews</div>
+          <div style={styles.navItem}>Contact</div>
         </nav>
-        <button style={styles.applyButton}>apply</button>
-      </header>
-      
-      <main style={styles.main} ref={sceneRef}></main>
-
-      <section style={styles.teamIntro}>
-        <h2 style={styles.teamTitle}>Knows your codebase</h2>
-        <p style={styles.teamDescription}>
-          Get the best answers from your codebase — or refer to specific files or docs. Use the model's code in one click.
-        </p>
-        <p style={styles.teamDescription}>
-          SINCE 2022
-        </p>
-      </section>
-
-      <section style={styles.emailForm}>
-        <h2>Stay Updated</h2>
-        <p>Subscribe to our newsletter for the latest updates.</p>
+        <button style={styles.applyButton}>Apply Now</button>
+      </div>
+      <div style={styles.main} ref={sceneRef}></div>
+      <div style={styles.teamIntro}>
+        <div style={styles.teamTitle}>Meet Our Team</div>
+        <div style={styles.teamDescription}>
+          Our team consists of experienced professionals who are passionate about bringing you the best experience.
+        </div>
+      </div>
+      <div style={styles.emailForm}>
         <form onSubmit={handleSubmit}>
           <input
             type="email"
@@ -378,77 +292,50 @@ const LandingPage = () => {
           />
           <button type="submit" style={styles.emailButton}>Subscribe</button>
         </form>
-      </section>
-
-      <section style={styles.featuresSection}>
+      </div>
+      <div style={styles.featuresSection}>
         <div style={styles.feature}>
-          <div style={styles.featureIcon}>▶️</div>
-          <h3 style={styles.featureTitle}>Feels Familiar</h3>
-          <p style={styles.featureDescription}>
-            Import all your extensions, themes, and keybindings in one click.
-          </p>
+          <div style={styles.featureIcon}>⭐</div>
+          <div style={styles.featureTitle}>Feature 1</div>
+          <div style={styles.featureDescription}>Description of feature 1.</div>
         </div>
         <div style={styles.feature}>
-          <div style={styles.featureIcon}>🔒</div>
-          <h3 style={styles.featureTitle}>Privacy & Security</h3>
-          <p style={styles.featureDescription}>
-            With privacy mode, none of your code is stored by us. Cursor is SOC 2 certified.
-          </p>
+          <div style={styles.featureIcon}>🚀</div>
+          <div style={styles.featureTitle}>Feature 2</div>
+          <div style={styles.featureDescription}>Description of feature 2.</div>
         </div>
         <div style={styles.feature}>
-          <div style={styles.featureIcon}>🔑</div>
-          <h3 style={styles.featureTitle}>Bring Your Own Key</h3>
-          <p style={styles.featureDescription}>
-            Start out with your API Key. Use our hosted version for the full experience.
-          </p>
+          <div style={styles.featureIcon}>💎</div>
+          <div style={styles.featureTitle}>Feature 3</div>
+          <div style={styles.featureDescription}>Description of feature 3.</div>
         </div>
-      </section>
-
-      <section style={styles.developerReviews}>
-        <h2 style={styles.reviewsTitle}>Loved by Developers</h2>
-        <p style={styles.reviewsSubtitle}>We are proud to have helped developers all over the world.</p>
+      </div>
+      <div style={styles.developerReviews}>
+        <div style={styles.reviewsTitle}>What Developers Say</div>
+        <div style={styles.reviewsSubtitle}>Here are some reviews from our developers.</div>
         <div style={styles.reviewsGrid}>
-          {reviews.map((review, index) => (
-            <div key={index} style={styles.reviewCard}>
-              <div style={styles.reviewProfile}>
-                <div style={styles.reviewAvatar}>{review.avatar}</div>
-                <div>
-                  <div style={styles.reviewName}>{review.name}</div>
-                  <div style={styles.reviewPosition}>{review.position}</div>
-                </div>
-              </div>
-              <p style={styles.reviewText}>{review.text}</p>
+          <div style={styles.reviewCard}>
+            <div style={styles.reviewProfile}>
+              <div style={styles.reviewAvatar}>A</div>
+              <div>Alex</div>
             </div>
-          ))}
+            <div style={styles.reviewText}>
+              "This tool is fantastic for rapid development and testing."
+            </div>
+          </div>
+          <div style={styles.reviewCard}>
+            <div style={styles.reviewProfile}>
+              <div style={styles.reviewAvatar}>B</div>
+              <div>Ben</div>
+            </div>
+            <div style={styles.reviewText}>
+              "A must-have for every developer's toolkit."
+            </div>
+          </div>
         </div>
-
-    </section>
-
-<footer style={styles.footer}>
-  <div style={styles.footerContent}>
-    <div style={styles.footerLogo}>
-      <span style={{ marginRight: '0.5rem' }}>▢</span> CURSOR
+      </div>
     </div>
-    <div style={styles.footerLinks}>
-      <a href="#" style={styles.footerLink}>Pricing</a>
-      <a href="#" style={styles.footerLink}>Company</a>
-      <a href="#" style={styles.footerLink}>Twitter</a>
-      <a href="#" style={styles.footerLink}>Forum</a>
-      <a href="#" style={styles.footerLink}>Changelog</a>
-      <a href="#" style={styles.footerLink}>GitHub</a>
-      <a href="#" style={styles.footerLink}>Careers</a>
-      <a href="#" style={styles.footerLink}>Privacy</a>
-      <a href="#" style={styles.footerLink}>Blog</a>
-      <a href="#" style={styles.footerLink}>Terms</a>
-    </div>
-    <div style={styles.footerEmail}>hi@cursor.com</div>
-  </div>
-  <div style={styles.footerBottom}>
-    <div>Made by Anysphere</div>
-    <div>SOC 2 Certified</div>
-  </div>
-</footer>
-</div>
-);
+  );
 };
+
 export default LandingPage;
