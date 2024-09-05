@@ -29,9 +29,8 @@ const LandingPage = () => {
         options: {
           width: window.innerWidth,
           height: window.innerHeight,
-          wireframes: false, // This ensures shapes are shown as wireframes.
-          background: '#000000',
-          showAngleIndicator: false,
+          wireframes: true, // 도형들이 와이어프레임으로 나타나도록 설정
+          background: '#000000', // 검은 배경
         },
       });
 
@@ -87,9 +86,9 @@ const LandingPage = () => {
         friction: 0.0001,
         restitution: 0.8,
         render: {
-          fillStyle: 'transparent',
-          strokeStyle: 'white',
-          lineWidth: 2,
+          fillStyle: 'transparent', // 내부는 투명
+          strokeStyle: 'white', // 테두리 색상 흰색
+          lineWidth: 2, // 테두리 두께
         },
       };
 
@@ -151,7 +150,6 @@ const LandingPage = () => {
     Example.timescale();
 
     return () => {
-      // Clean up on unmount
       Matter.Engine.clear(Example.timescale.engine);
     };
   }, []);
