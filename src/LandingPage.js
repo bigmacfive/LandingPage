@@ -22,9 +22,12 @@ const LandingPage = () => {
       var engine = Engine.create(),
         world = engine.world;
 
+      // DOM에 body가 아니라 특정 element에 바인딩하도록 수정
+      const container = document.getElementById('matter-container');
+
       // create renderer
       var render = Render.create({
-        element: document.body,
+        element: container, // document.body 대신 특정 element로 설정
         engine: engine,
         options: {
           width: window.innerWidth,
@@ -162,7 +165,7 @@ const LandingPage = () => {
     };
   }, []);
 
-  return <div className="main" />;
+  return <div id="matter-container" style={{ width: '100%', height: '100vh', background: 'black' }} />;
 };
 
 export default LandingPage;
