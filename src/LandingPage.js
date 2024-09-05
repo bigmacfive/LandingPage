@@ -21,6 +21,9 @@ const LandingPage = () => {
   useEffect(() => {
     const { Engine, Render, Runner, Common, MouseConstraint, Mouse, Composite, Vertices, Svg, Bodies } = Matter;
 
+    // Check if `sceneRef.current` is available
+    if (!sceneRef.current) return;
+
     // Create engine
     const engine = Engine.create();
     const world = engine.world;
@@ -46,10 +49,10 @@ const LandingPage = () => {
 
     // Load and add SVGs
     const svgPaths = [
-      './iconmonstr-check-mark-8-icon.svg',
-      './iconmonstr-paperclip-2-icon.svg',
-      './iconmonstr-puzzle-icon.svg',
-      './iconmonstr-user-icon.svg'
+      '/iconmonstr-check-mark-8-icon.svg',
+      '/iconmonstr-paperclip-2-icon.svg',
+      '/iconmonstr-puzzle-icon.svg',
+      '/iconmonstr-user-icon.svg'
     ];
 
     svgPaths.forEach((path, i) => {
@@ -68,6 +71,8 @@ const LandingPage = () => {
             }
           }, true));
         }
+      }).catch(error => {
+        console.error(`Error loading SVG at ${path}: ${error}`);
       });
     });
 
@@ -109,7 +114,7 @@ const LandingPage = () => {
     };
   }, []);
 
-  return <div ref={sceneRef} style={{ width: '800px', height: '600px' }}></div>;
+  return <div ref={sceneRef} style={{ width: '800px', height: '600px', border: '1px solid black' }}></div>;
 };
 
 export default LandingPage;
