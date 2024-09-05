@@ -1,20 +1,25 @@
 import React, { useEffect, useRef } from 'react';
 import Matter from 'matter-js';
 
+// Helper function to load SVG
+const loadSvg = async (url) => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+    const raw = await response.text();
+    const parser = new window.DOMParser();
+    return parser.parseFromString(raw, 'image/svg+xml');
+  } catch (error) {
+    console.error(`Failed to load SVG: ${error}`);
+    return null;
+  }
+};
+
 const LandingPage = () => {
   const sceneRef = useRef(null);
 
   useEffect(() => {
-    const Engine = Matter.Engine,
-      Render = Matter.Render,
-      Runner = Matter.Runner,
-      Common = Matter.Common,
-      MouseConstraint = Matter.MouseConstraint,
-      Mouse = Matter.Mouse,
-      Composite = Matter.Composite,
-      Vertices = Matter.Vertices,
-      Svg = Matter.Svg,
-      Bodies = Matter.Bodies;
+    const { Engine, Render, Runner, Common, MouseConstraint, Mouse, Composite, Vertices, Svg, Bodies } = Matter;
 
     // Create engine
     const engine = Engine.create();
@@ -36,22 +41,10 @@ const LandingPage = () => {
     const runner = Runner.create();
     Runner.run(runner, engine);
 
-    // Load SVG
-    const loadSvg = async (url) => {
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-        const raw = await response.text();
-        const parser = new window.DOMParser();
-        return parser.parseFromString(raw, 'image/svg+xml');
-      } catch (error) {
-        console.error(`Failed to load SVG: ${error}`);
-        return null;
-      }
-    };
-
+    // Helper function to select paths from SVG
     const select = (root, selector) => Array.from(root.querySelectorAll(selector));
 
+    // Load and add SVGs
     const svgPaths = [
       './iconmonstr-check-mark-8-icon.svg',
       './iconmonstr-paperclip-2-icon.svg',
@@ -76,21 +69,6 @@ const LandingPage = () => {
           }, true));
         }
       });
-    });
-
-    loadSvg('./thescents.svg').then(root => {
-      if (root) {
-        const color = Common.choose(['#f19648', '#f5d259', '#f55a3c', '#063e7b', '#ececd1']);
-        const vertexSets = select(root, 'path').map(path => Svg.pathToVertices(path, 30));
-
-        Composite.add(world, Bodies.fromVertices(400, 80, vertexSets, {
-          render: {
-            fillStyle: color,
-            strokeStyle: color,
-            lineWidth: 1
-          }
-        }, true));
-      }
     });
 
     // Add boundaries
