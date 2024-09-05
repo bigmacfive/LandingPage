@@ -1,12 +1,6 @@
 import React from 'react';
-import LandingPage from './components/LandingPage';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
 
-function App() {
-  return (
-    <div className="App">
-      <LandingPage />
-    </div>
-  );
-}
-
-export default App;
+ReactDOM.render(<App />, document.getElementById('root'));
