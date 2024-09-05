@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import Matter from 'matter-js';
-import decomp from 'poly-decomp';
 
 const LandingPage = () => {
   const sceneRef = useRef(null);
@@ -17,11 +16,11 @@ const LandingPage = () => {
       Svg = Matter.Svg,
       Bodies = Matter.Bodies;
 
-    Common.setDecomp(decomp);
-
+    // Create engine
     const engine = Engine.create();
     const world = engine.world;
 
+    // Create renderer
     const render = Render.create({
       element: sceneRef.current,
       engine: engine,
@@ -33,9 +32,11 @@ const LandingPage = () => {
 
     Render.run(render);
 
+    // Create runner
     const runner = Runner.create();
     Runner.run(runner, engine);
 
+    // Load SVG
     const loadSvg = async (url) => {
       try {
         const response = await fetch(url);
@@ -92,6 +93,7 @@ const LandingPage = () => {
       }
     });
 
+    // Add boundaries
     Composite.add(world, [
       Bodies.rectangle(400, 0, 800, 50, { isStatic: true }),
       Bodies.rectangle(400, 600, 800, 50, { isStatic: true }),
@@ -99,6 +101,7 @@ const LandingPage = () => {
       Bodies.rectangle(0, 300, 50, 600, { isStatic: true })
     ]);
 
+    // Add mouse control
     const mouse = Mouse.create(render.canvas);
     const mouseConstraint = MouseConstraint.create(engine, {
       mouse: mouse,
@@ -111,11 +114,13 @@ const LandingPage = () => {
     Composite.add(world, mouseConstraint);
     render.mouse = mouse;
 
+    // Fit the render viewport to the scene
     Render.lookAt(render, {
       min: { x: 0, y: 0 },
       max: { x: 800, y: 600 }
     });
 
+    // Cleanup
     return () => {
       Matter.Render.stop(render);
       Matter.Runner.stop(runner);
