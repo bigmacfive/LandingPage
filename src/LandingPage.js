@@ -1,334 +1,212 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Matter from 'matter-js';
-import './index.css'; // CSS 파일 임포트
+import './index.css'; // 스타일 파일 임포트
 
 const LandingPage = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 500);
-  const [fontSize, setFontSize] = useState(16);
-  const [email, setEmail] = useState('');
   const sceneRef = useRef(null);
-  const engineRef = useRef(null);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 500);
-      setFontSize(Math.max(12, Math.min(16, window.innerWidth / 50)));
-    };
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     const Engine = Matter.Engine,
           Render = Matter.Render,
           Runner = Matter.Runner,
-          Bodies = Matter.Bodies,
+          Body = Matter.Body,
+          Events = Matter.Events,
           Composite = Matter.Composite,
+          Composites = Matter.Composites,
+          Common = Matter.Common,
+          MouseConstraint = Matter.MouseConstraint,
           Mouse = Matter.Mouse,
-          MouseConstraint = Matter.MouseConstraint;
+          Bodies = Matter.Bodies;
 
-    engineRef.current = Engine.create();
+    // create engine
+    const engine = Engine.create(),
+          world = engine.world;
+
+    // create renderer
     const render = Render.create({
       element: sceneRef.current,
-      engine: engineRef.current,
+      engine: engine,
       options: {
-        width: sceneRef.current.clientWidth,
-        height: sceneRef.current.clientHeight,
-        wireframes: false,
-        background: 'black'
+        width: 800,
+        height: 600,
+        background: 'transparent',
+        wireframes: false
       }
     });
 
-    const ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true, render: { fillStyle: '#060a19' } });
-    const text = Bodies.rectangle(400, 300, 600, 100, {
-      isStatic: true,
-      render: {
-        fillStyle: 'white',
-        text: {
-          content: 'THE SCENTS',
-          color: 'white',
-          size: 80,
-          family: "'IBM Plex Mono', monospace"
+    Render.run(render);
+
+    // create runner
+    const runner = Runner.create();
+    Runner.run(runner, engine);
+
+    // add boundaries
+    Composite.add(world, [
+      Bodies.rectangle(400, 0, 800, 50, { isStatic: true }),
+      Bodies.rectangle(400, 600, 800, 50, { isStatic: true }),
+      Bodies.rectangle(800, 300, 50, 600, { isStatic: true }),
+      Bodies.rectangle(0, 300, 50, 600, { isStatic: true })
+    ]);
+
+    const explosion = function(engine, delta) {
+      const timeScale = (1000 / 60) / delta;
+      const bodies = Composite.allBodies(engine.world);
+
+      for (let i = 0; i < bodies.length; i++) {
+        const body = bodies[i];
+
+        if (!body.isStatic && body.position.y >= 500) {
+          const forceMagnitude = (0.05 * body.mass) * timeScale;
+
+          Body.applyForce(body, body.position, {
+            x: (forceMagnitude + Common.random() * forceMagnitude) * Common.choose([1, -1]), 
+            y: -forceMagnitude + Common.random() * -forceMagnitude
+          });
         }
       }
-    });
+    };
 
-    const pentagon = Bodies.polygon(300, 100, 5, 50);
-    const rectangle = Bodies.rectangle(500, 100, 100, 50);
-    const circle = Bodies.circle(400, 100, 30);
-    const square = Bodies.rectangle(200, 100, 50, 50);
+    let timeScaleTarget = 1,
+        lastTime = Common.now();
 
-    Composite.add(engineRef.current.world, [ground, text, pentagon, rectangle, circle, square]);
+    Events.on(engine, 'afterUpdate', function(event) {
+      const timeScale = (event.delta || (1000 / 60)) / 1000;
 
-    const mouse = Mouse.create(render.canvas);
-    const mouseConstraint = MouseConstraint.create(engineRef.current, {
-      mouse: mouse,
-      constraint: {
-        stiffness: 0.2,
-        render: {
-          visible: false
-        }
+      engine.timing.timeScale += (timeScaleTarget - engine.timing.timeScale) * 12 * timeScale;
+
+      if (Common.now() - lastTime >= 2000) {
+        timeScaleTarget = timeScaleTarget < 1 ? 1 : 0;
+        explosion(engine, event.delta);
+        lastTime = Common.now();
       }
     });
 
-    Composite.add(engineRef.current.world, mouseConstraint);
+    const bodyOptions = {
+      frictionAir: 0, 
+      friction: 0.0001,
+      restitution: 0.8
+    };
+    
+    Composite.add(world, Composites.stack(20, 100, 15, 3, 20, 40, function(x, y) {
+      return Bodies.circle(x, y, Common.random(10, 20), bodyOptions);
+    }));
+
+    Composite.add(world, Composites.stack(50, 50, 8, 3, 0, 0, function(x, y) {
+      switch (Math.round(Common.random(0, 1))) {
+        case 0:
+          if (Common.random() < 0.8) {
+            return Bodies.rectangle(x, y, Common.random(20, 50), Common.random(20, 50), bodyOptions);
+          } else {
+            return Bodies.rectangle(x, y, Common.random(80, 120), Common.random(20, 30), bodyOptions);
+          }
+        case 1:
+          return Bodies.polygon(x, y, Math.round(Common.random(4, 8)), Common.random(20, 50), bodyOptions);
+      }
+    }));
+
+    const mouse = Mouse.create(render.canvas),
+          mouseConstraint = MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+              stiffness: 0.2,
+              render: {
+                visible: false
+              }
+            }
+          });
+
+    Composite.add(world, mouseConstraint);
+
     render.mouse = mouse;
 
-    Matter.Runner.run(engineRef.current);
-    Render.run(render);
+    Render.lookAt(render, {
+      min: { x: 0, y: 0 },
+      max: { x: 800, y: 600 }
+    });
 
     return () => {
       Render.stop(render);
-      Engine.clear(engineRef.current);
+      Runner.stop(runner);
     };
   }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Email submitted:', email);
-    setEmail('');
-  };
-
-  const styles = {
-    header: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      backgroundColor: 'white',
-      gap: '0.5rem',
-    },
-    title: {
-      fontSize: `${fontSize}px`,
-      fontWeight: 'bold',
-      padding: '0.5rem',
-      backgroundColor: 'black',
-      color: 'white',
-      borderRadius: '8px',
-      height: '40px',
-      display: 'flex',
-      alignItems: 'center',
-      whiteSpace: 'nowrap',
-    },
-    nav: {
-      display: isMobile ? 'none' : 'flex',
-      alignItems: 'center',
-      backgroundColor: 'black',
-      color: 'white',
-      borderRadius: '8px',
-      height: '40px',
-      overflow: 'hidden',
-      flexGrow: 1,
-    },
-    navItem: {
-      padding: '0 1rem',
-      cursor: 'pointer',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-    },
-    applyButton: {
-      padding: '0 1rem',
-      backgroundColor: '#0066cc',
-      color: 'white',
-      border: 'none',
-      cursor: 'pointer',
-      borderRadius: '8px',
-      height: '40px',
-      fontSize: `${fontSize}px`,
-      whiteSpace: 'nowrap',
-    },
-    main: {
-      height: 'calc(100vh - 60px)',
-      marginTop: '0.5rem',
-      borderRadius: '8px',
-      overflow: 'hidden',
-    },
-    teamIntro: {
-      backgroundColor: '#FFC0CB',
-      padding: '2rem',
-      marginTop: '0.5rem',
-      borderRadius: '8px',
-    },
-    teamTitle: {
-      fontSize: '2rem',
-      fontWeight: 'bold',
-      marginBottom: '1rem',
-    },
-    teamDescription: {
-      fontSize: '1rem',
-      lineHeight: '1.5',
-    },
-    emailForm: {
-      backgroundColor: 'black',
-      color: 'white',
-      padding: '2rem',
-      marginTop: '0.5rem',
-      borderRadius: '8px',
-      textAlign: 'center',
-    },
-    emailInput: {
-      width: '100%',
-      maxWidth: '400px',
-      padding: '0.5rem',
-      marginRight: '0.5rem',
-      borderRadius: '4px',
-      border: '1px solid #ccc',
-      backgroundColor: 'black',
-      color: 'white',
-    },
-    emailButton: {
-      padding: '0.5rem 1rem',
-      backgroundColor: 'white',
-      color: 'black',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontWeight: 'bold',
-    },
-    featuresSection: {
-      backgroundColor: '#f0f0f0',
-      padding: '2rem',
-      marginTop: '0.5rem',
-      borderRadius: '8px',
-    },
-    feature: {
-      marginBottom: '2rem',
-      textAlign: 'center',
-    },
-    featureIcon: {
-      fontSize: '3rem',
-      marginBottom: '1rem',
-    },
-    featureTitle: {
-      fontSize: '1.5rem',
-      fontWeight: 'bold',
-      marginBottom: '0.5rem',
-    },
-    featureDescription: {
-      fontSize: '1rem',
-      lineHeight: '1.5',
-    },
-    developerReviews: {
-      backgroundColor: 'black',
-      color: 'white',
-      padding: '2rem',
-      marginTop: '0.5rem',
-      borderRadius: '8px',
-      textAlign: 'center',
-    },
-    reviewsTitle: {
-      fontSize: '2.5rem',
-      marginBottom: '1rem',
-    },
-    reviewsSubtitle: {
-      fontSize: '1rem',
-      marginBottom: '2rem',
-    },
-    reviewsGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-      gap: '1rem',
-    },
-    reviewCard: {
-      backgroundColor: 'white',
-      color: 'black',
-      borderRadius: '8px',
-      padding: '1rem',
-      textAlign: 'left',
-    },
-    reviewProfile: {
-      display: 'flex',
-      alignItems: 'center',
-      marginBottom: '1rem',
-    },
-    reviewAvatar: {
-      width: '50px',
-      height: '50px',
-      borderRadius: '50%',
-      marginRight: '1rem',
-      backgroundColor: '#ccc',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '1.5rem',
-      color: '#333',
-    },
-    reviewText: {
-      fontSize: '1rem',
-      lineHeight: '1.5',
-    },
-  };
-
   return (
     <div className="container">
-      <div style={styles.header}>
-        <div style={styles.title}>THE SCENTS</div>
-        <nav style={styles.nav}>
-          <div style={styles.navItem}>Home</div>
-          <div style={styles.navItem}>Features</div>
-          <div style={styles.navItem}>Reviews</div>
-          <div style={styles.navItem}>Contact</div>
+      {/* 상단 헤더 */}
+      <div className="header">
+        <div className="title">THE SCENTS</div>
+        <nav className="nav">
+          <div className="nav-item">Home</div>
+          <div className="nav-item">Features</div>
+          <div className="nav-item">Reviews</div>
+          <div className="nav-item">Contact</div>
         </nav>
-        <button style={styles.applyButton}>Apply Now</button>
+        <button className="apply-button">Apply Now</button>
       </div>
-      <div style={styles.main} ref={sceneRef}></div>
-      <div style={styles.teamIntro}>
-        <div style={styles.teamTitle}>Meet Our Team</div>
-        <div style={styles.teamDescription}>
+
+      {/* 애니메이션 영역 */}
+      <div className="main" ref={sceneRef} style={{ position: 'relative', zIndex: -1 }}></div>
+
+      {/* 팀 소개 섹션 */}
+      <div className="team-intro">
+        <div className="team-title">Meet Our Team</div>
+        <div className="team-description">
           Our team consists of experienced professionals who are passionate about bringing you the best experience.
         </div>
       </div>
-      <div style={styles.emailForm}>
-        <form onSubmit={handleSubmit}>
+
+      {/* 이메일 구독 섹션 */}
+      <div className="email-form">
+        <form onSubmit={(e) => e.preventDefault()}>
           <input
             type="email"
             placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={styles.emailInput}
+            style={{ width: '100%', maxWidth: '400px' }}
             required
           />
-          <button type="submit" style={styles.emailButton}>Subscribe</button>
+          <button type="submit">Subscribe</button>
         </form>
       </div>
-      <div style={styles.featuresSection}>
-        <div style={styles.feature}>
-          <div style={styles.featureIcon}>⭐</div>
-          <div style={styles.featureTitle}>Feature 1</div>
-          <div style={styles.featureDescription}>Description of feature 1.</div>
+
+      {/* 기능 섹션 */}
+      <div className="features-section">
+        <div className="feature">
+          <div className="feature-icon">⭐</div>
+          <div className="feature-title">Feature 1</div>
+          <div className="feature-description">Description of feature 1.</div>
         </div>
-        <div style={styles.feature}>
-          <div style={styles.featureIcon}>🚀</div>
-          <div style={styles.featureTitle}>Feature 2</div>
-          <div style={styles.featureDescription}>Description of feature 2.</div>
+        <div className="feature">
+          <div className="feature-icon">🚀</div>
+          <div className="feature-title">Feature 2</div>
+          <div className="feature-description">Description of feature 2.</div>
         </div>
-        <div style={styles.feature}>
-          <div style={styles.featureIcon}>💎</div>
-          <div style={styles.featureTitle}>Feature 3</div>
-          <div style={styles.featureDescription}>Description of feature 3.</div>
+        <div className="feature">
+          <div className="feature-icon">💎</div>
+          <div className="feature-title">Feature 3</div>
+          <div className="feature-description">Description of feature 3.</div>
         </div>
       </div>
-      <div style={styles.developerReviews}>
-        <div style={styles.reviewsTitle}>What Developers Say</div>
-        <div style={styles.reviewsSubtitle}>Here are some reviews from our developers.</div>
-        <div style={styles.reviewsGrid}>
-          <div style={styles.reviewCard}>
-            <div style={styles.reviewProfile}>
-              <div style={styles.reviewAvatar}>A</div>
+
+      {/* 개발자 리뷰 섹션 */}
+      <div className="developer-reviews">
+        <div className="reviews-title">What Developers Say</div>
+        <div className="reviews-subtitle">Here are some reviews from our developers.</div>
+        <div className="reviews-grid">
+          <div className="review-card">
+            <div className="review-profile">
+              <div className="review-avatar">A</div>
               <div>Alex</div>
             </div>
-            <div style={styles.reviewText}>
+            <div className="review-text">
               "This tool is fantastic for rapid development and testing."
             </div>
           </div>
-          <div style={styles.reviewCard}>
-            <div style={styles.reviewProfile}>
-              <div style={styles.reviewAvatar}>B</div>
+          <div className="review-card">
+            <div className="review-profile">
+              <div className="review-avatar">B</div>
               <div>Ben</div>
             </div>
-            <div style={styles.reviewText}>
+            <div className="review-text">
               "A must-have for every developer's toolkit."
             </div>
           </div>

@@ -1,21 +1,187 @@
-/* src/index.css */
-body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    display: flex;
-    justify-content: center; /* 화면 중앙에 컨텐츠를 배치 */
-    align-items: center; /* 화면 중앙에 컨텐츠를 배치 */
-    min-height: 100vh; /* 최소 높이를 화면 전체로 설정 */
-    background-color: #f0f0f0; /* 배경 색상 설정 */
+/* 전체 컨테이너 */
+.container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
   }
   
-  .container {
-    max-width: 800px;
-    width: 100%; /* 너비를 100%로 설정하되 최대 800px */
-    padding: 1rem;
-    box-sizing: border-box; /* 패딩과 테두리를 포함하여 전체 너비를 계산 */
-    background-color: white;
-    border-radius: 8px; /* 옵션: 배경을 둥글게 설정 */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 옵션: 배경에 그림자 추가 */
+  /* 상단 헤더 */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .title {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .nav {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .nav-item {
+    cursor: pointer;
+    font-size: 16px;
+    transition: color 0.3s;
+  }
+  
+  .nav-item:hover {
+    color: #007BFF;
+  }
+  
+  .apply-button {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .apply-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* 애니메이션 메인 영역 */
+  .main {
+    width: 100%;
+    height: 600px;
+    position: relative;
+    margin-top: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  /* 팀 소개 섹션 */
+  .team-intro {
+    text-align: center;
+    margin-top: 40px;
+  }
+  
+  .team-title {
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  .team-description {
+    margin-top: 10px;
+    font-size: 16px;
+    color: #666;
+  }
+  
+  /* 이메일 구독 폼 */
+  .email-form {
+    text-align: center;
+    margin-top: 40px;
+  }
+  
+  .email-form input {
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .email-form button {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .email-form button:hover {
+    background-color: #218838;
+  }
+  
+  /* 기능 섹션 */
+  .features-section {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 40px;
+  }
+  
+  .feature {
+    text-align: center;
+  }
+  
+  .feature-icon {
+    font-size: 30px;
+    margin-bottom: 10px;
+  }
+  
+  .feature-title {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .feature-description {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  /* 개발자 리뷰 섹션 */
+  .developer-reviews {
+    margin-top: 40px;
+    text-align: center;
+  }
+  
+  .reviews-title {
+    font-size: 22px;
+    font-weight: bold;
+  }
+  
+  .reviews-subtitle {
+    margin-top: 10px;
+    font-size: 16px;
+    color: #666;
+  }
+  
+  .reviews-grid {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+  }
+  
+  .review-card {
+    width: 30%;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+  }
+  
+  .review-profile {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .review-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #007BFF;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-right: 10px;
+  }
+  
+  .review-text {
+    font-size: 14px;
+    color: #666;
   }
   
