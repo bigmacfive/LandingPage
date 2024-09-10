@@ -1,120 +1,79 @@
-import React, { useEffect, useRef } from 'react';
-import Matter from 'matter-js';
+import React, { useRef, useEffect } from 'react';
+import * as THREE from 'three';
 
-// Helper function to load SVG
-const loadSvg = async (url) => {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-    const raw = await response.text();
-    const parser = new window.DOMParser();
-    return parser.parseFromString(raw, 'image/svg+xml');
-  } catch (error) {
-    console.error(`Failed to load SVG: ${error}`);
-    return null;
-  }
-};
-
-const LandingPage = () => {
-  const sceneRef = useRef(null);
+const ParticleSystem = () => {
+  const mountRef = useRef(null);
 
   useEffect(() => {
-    const { Engine, Render, Runner, Common, MouseConstraint, Mouse, Composite, Vertices, Svg, Bodies } = Matter;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
 
-    // Check if `sceneRef.current` is available
-    if (!sceneRef.current) return;
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    mountRef.current.appendChild(renderer.domElement);
 
-    // Create engine
-    const engine = Engine.create();
-    const world = engine.world;
+    // 입자 생성
+    const particleCount = 1500;
+    const particles = new Float32Array(particleCount * 3);
+    const geometry = new THREE.BufferGeometry();
+    const material = new THREE.PointsMaterial({
+      color: 0xFFFFFF,
+      size: 0.05,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      sizeAttenuation: true
+    });
 
-    // Create renderer
-    const render = Render.create({
-      element: sceneRef.current,
-      engine: engine,
-      options: {
-        width: 800,
-        height: 600
+    // 8자 모양의 입자 배치
+    for (let i = 0; i < particleCount; i++) {
+      const t = i / particleCount;
+      const x = 0.5 * Math.sin(4 * Math.PI * t);
+      const y = 0.5 * Math.sin(2 * Math.PI * t);
+      const z = 0.1 * (Math.random() - 0.5);  // 약간의 깊이 추가
+
+      particles[i * 3] = x;
+      particles[i * 3 + 1] = y;
+      particles[i * 3 + 2] = z;
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(particles, 3));
+    const particleSystem = new THREE.Points(geometry, material);
+    scene.add(particleSystem);
+
+    camera.position.z = 2;
+
+    // 노이즈 애니메이션
+    const animate = () => {
+      requestAnimationFrame(animate);
+
+      const positions = geometry.attributes.position.array;
+      for (let i = 0; i < particleCount; i++) {
+        positions[i * 3 + 2] += (Math.random() - 0.5) * 0.01;
       }
-    });
+      geometry.attributes.position.needsUpdate = true;
 
-    Render.run(render);
+      renderer.render(scene, camera);
+    };
 
-    // Create runner
-    const runner = Runner.create();
-    Runner.run(runner, engine);
+    animate();
 
-    // Helper function to select paths from SVG
-    const select = (root, selector) => Array.from(root.querySelectorAll(selector));
+    // 창 크기 조정 처리
+    const handleResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
 
-    // Load and add SVGs
-    const svgPaths = [
-      '/iconmonstr-check-mark-8-icon.svg',
-      '/iconmonstr-paperclip-2-icon.svg',
-      '/iconmonstr-puzzle-icon.svg',
-      '/iconmonstr-user-icon.svg'
-    ];
+    window.addEventListener('resize', handleResize);
 
-    svgPaths.forEach((path, i) => {
-      loadSvg(path).then(root => {
-        if (root) {
-          const color = Common.choose(['#f19648', '#f5d259', '#f55a3c', '#063e7b', '#ececd1']);
-          const vertexSets = select(root, 'path').map(path =>
-            Vertices.scale(Svg.pathToVertices(path, 30), 0.4, 0.4)
-          );
-
-          Composite.add(world, Bodies.fromVertices(100 + i * 150, 200 + i * 50, vertexSets, {
-            render: {
-              fillStyle: color,
-              strokeStyle: color,
-              lineWidth: 1
-            }
-          }, true));
-        }
-      }).catch(error => {
-        console.error(`Error loading SVG at ${path}: ${error}`);
-      });
-    });
-
-    // Add boundaries
-    Composite.add(world, [
-      Bodies.rectangle(400, 0, 800, 50, { isStatic: true }),
-      Bodies.rectangle(400, 600, 800, 50, { isStatic: true }),
-      Bodies.rectangle(800, 300, 50, 600, { isStatic: true }),
-      Bodies.rectangle(0, 300, 50, 600, { isStatic: true })
-    ]);
-
-    // Add mouse control
-    const mouse = Mouse.create(render.canvas);
-    const mouseConstraint = MouseConstraint.create(engine, {
-      mouse: mouse,
-      constraint: {
-        stiffness: 0.2,
-        render: { visible: false }
-      }
-    });
-
-    Composite.add(world, mouseConstraint);
-    render.mouse = mouse;
-
-    // Fit the render viewport to the scene
-    Render.lookAt(render, {
-      min: { x: 0, y: 0 },
-      max: { x: 800, y: 600 }
-    });
-
-    // Cleanup
+    // 정리
     return () => {
-      Matter.Render.stop(render);
-      Matter.Runner.stop(runner);
-      Matter.Composite.clear(world);
-      Matter.Engine.clear(engine);
-      render.canvas.remove();
-      render.textures = {};
+      window.removeEventListener('resize', handleResize);
+      mountRef.current.removeChild(renderer.domElement);
     };
   }, []);
 
-  return <div ref={sceneRef} style={{ width: '800px', height: '600px', border: '1px solid black' }}></div>;
+  return <div ref={mountRef} />;
 };
 
-export default LandingPage;
+export default ParticleSystem;
